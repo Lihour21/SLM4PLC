@@ -1,1 +1,3 @@
-a
+Task 1: Crossing System 
+Design a PLC function block named Pedestrian-Crossing-System using Structured Text (ST) code. The function block should contain one Boolean input variable (PB_Cross) and five Boolean output variables (Veh_Green, Veh_Yellow, Veh_Red, Ped_Green, and Ped_Red). Implement a timed sequence such that when PB_Cross is activated, the system waits 45 seconds before switching Veh_Green to OFF and Veh_Yellow to ON for 5 seconds. Following this, the system must switch Veh_Yellow and Ped_Red to OFF, while setting Veh_Red and Ped_Green to ON for a duration of 20 seconds. The function block should represent a looped control system that automatically returns to the initial state (Vehicle Green and Pedestrian Red ON) after the crossing cycle is complete.
+
