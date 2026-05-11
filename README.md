@@ -1,7 +1,7 @@
 # SLM4PLC , Ollama4PLC
 SLM4PLC is a high-assurance framework for the automated generation and formal verification of IEC 61131-3 Structured Text (ST).
 
-# local-chatbot
+# Local-chatbot
 
 This project leverages SLM4PLC and Chainlit to create a 100% locally running mini-Chatbot.
 
