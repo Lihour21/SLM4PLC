@@ -1,0 +1,21 @@
+{
+    "llm_model": "deepseek-coder:6.7b",
+    "api_base_url": "http://localhost:11434",
+    "api_key": "ollama",
+    "plcverif_path": "/home/lee/mcp4plc-plus/plcverif/plcverif-cli",
+    "rusty_path": "/home/lee/mcp4plc-plus/rusty/target/release/plc",
+    "nuxmv_path": "/usr/local/bin/nuxmv",
+    "output_dir": "output",
+    "timeout": 200,
+    "rag": {
+        "enabled": true,
+        "db_dir": "./database/st_db",
+        "dataset_paths": [
+            "./dataset/oscat_plc_code_793.json"
+        ],
+        "embedding_model": "nomic-embed-text",
+        "top_k": 3,
+        "chunk_size": 1000,
+        "chunk_overlap": 200
+    }
+}
