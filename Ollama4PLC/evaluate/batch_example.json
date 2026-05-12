@@ -1,0 +1,49 @@
+{
+  "description": "Batch evaluation configuration for Ollama4PLC",
+  "evaluation_type": "smv",
+  "input_files": [
+    {
+      "st_file_path": "./examples/motor_control.st",
+      "name": "motor_control",
+      "properties": [
+        {
+          "property_description": "Motor should not run when stop is pressed",
+          "property": {
+            "job_req": "pattern",
+            "pattern_id": "pattern-implication",
+            "pattern_params": {
+              "1": "Stop_PB = TRUE",
+              "2": "Motor_Run = FALSE"
+            }
+          }
+        },
+        {
+          "property_description": "Motor run implies start was pressed",
+          "property": {
+            "job_req": "pattern",
+            "pattern_id": "pattern-invariant",
+            "pattern_params": {
+              "1": "Motor_Run = TRUE -> Start_PB = TRUE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "st_file_path": "./examples/traffic_light.st",
+      "name": "traffic_light",
+      "properties": [
+        {
+          "property_description": "Only one light active at a time",
+          "property": {
+            "job_req": "pattern",
+            "pattern_id": "pattern-invariant",
+            "pattern_params": {
+              "1": "(Red_Light + Yellow_Light + Green_Light) <= 1"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
