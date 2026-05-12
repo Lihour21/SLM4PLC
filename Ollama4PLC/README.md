@@ -138,7 +138,9 @@ cp config.example.json config.json
 # Edit config.json with your tool paths
 
 # Run the application
-python app.py
+python app.py --host 0.0.0.0 --port 8000
+or
+python app2.py --host 0.0.0.0 --port 8000 (*new version)
 ```
 
 Open your browser and navigate to `http://localhost:8000`
