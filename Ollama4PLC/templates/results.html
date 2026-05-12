@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results — Ollama4PLC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="{{ url_for('index') }}" class="logo-link">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect x="2" y="2" width="28" height="28" rx="6" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10 12h12M10 16h8M10 20h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <span class="brand-text">Ollama4PLC</span>
+            </a>
+        </div>
+        <a href="{{ url_for('index') }}" class="btn-back">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            New Request
+        </a>
+    </nav>
+
+    <!-- Status Header -->
+    <header class="results-header">
+        <div class="status-card status-{{ result.status }}">
+            <div class="status-icon">
+                {% if result.status == 'success' %}
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                {% elif result.status == 'partial' %}
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                {% else %}
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                {% endif %}
+            </div>
+            <div class="status-info">
+                <h1 class="status-title">
+                    {% if result.status == 'success' %}Pipeline Complete{% endif %}
+                    {% if result.status == 'partial' %}Partial Success{% endif %}
+                    {% if result.status == 'failed' %}Pipeline Failed{% endif %}
+                </h1>
+                <div class="status-meta">
+                    <span class="status-badge">{{ result.status|upper }}</span>
+                    <span class="duration-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        {{ result.duration }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {% if result.error %}
+    <div class="alert alert-error">
+        <div class="alert-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <div class="alert-content">
+            <strong>Pipeline Error</strong>
+            <span>{{ result.error }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Tool Status Bar -->
+    <section class="tool-status-bar">
+        <div class="tool-status-item {{ 'active' if result.tool_status.rusty else 'inactive' }}">
+            <span class="tool-dot"></span>
+            <span>RuSTy</span>
+        </div>
+        <div class="tool-status-item {{ 'active' if result.tool_status.nuxmv else 'inactive' }}">
+            <span class="tool-dot"></span>
+            <span>nuXmv</span>
+        </div>
+        <div class="tool-status-item {{ 'active' if result.tool_status.plcverif else 'inactive' }}">
+            <span class="tool-dot"></span>
+            <span>PLCverif</span>
+        </div>
+    </section>
+
+    <!-- Steps Timeline -->
+    <main class="results-main">
+        <div class="timeline">
+            <!-- Step 1: Generation -->
+            <div class="timeline-step {{ 'success' if result.steps.generate.success else 'failed' }} {{ 'expanded' if result.steps.generate.output }}" data-step="generate">
+                <div class="timeline-marker">
+                    <div class="marker-ring"></div>
+                    <div class="marker-icon">
+                        {% if result.steps.generate.success %}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        {% else %}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="timeline-content">
+                    <div class="step-header-row">
+                        <div class="step-title-group">
+                            <span class="step-number">01</span>
+                            <h3 class="step-title">ST Code Generation</h3>
+                            <span class="step-tag">Ollama LLM</span>
+                        </div>
+                        <span class="step-status-badge {{ 'success' if result.steps.generate.success else 'failed' }}">
+                            {{ 'Success' if result.steps.generate.success else 'Failed' }}
+                        </span>
+                    </div>
+                    {% if result.steps.generate.output %}
+                    <div class="step-body">
+                        {% if result.steps.generate.reasoning %}
+                        <div class="reasoning-card">
+                            <div class="reasoning-header">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                                <span>LLM Reasoning</span>
+                            </div>
+                            <div class="reasoning-body">{{ result.steps.generate.reasoning }}</div>
+                        </div>
+                        {% endif %}
+                        <div class="code-panel">
+                            <div class="code-header">
+                                <div class="code-tabs">
+                                    <span class="code-tab active">Generated ST</span>
+                                </div>
+                                <div class="code-actions">
+                                    <button type="button" class="code-btn" onclick="copyCode(this)" title="Copy">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                    </button>
+                                    <form action="{{ url_for('download_st') }}" method="POST" class="inline-form">
+                                        <input type="hidden" name="st_code" value="{{ result.steps.generate.output|replace('\n', '\\n')|replace('\r', '\\r')|replace('"', '\"') }}">
+                                        <button type="submit" class="code-btn" title="Download .st">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <pre class="code-block"><code>{{ result.steps.generate.output }}</code></pre>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Step 2: Compilation -->
+            <div class="timeline-step {{ 'success' if result.steps.compile.success else 'failed' }} {{ 'expanded' if result.steps.compile.output }}" data-step="compile">
+                <div class="timeline-marker">
+                    <div class="marker-ring"></div>
+                    <div class="marker-icon">
+                        {% if result.steps.compile.success %}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        {% else %}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="timeline-content">
+                    <div class="step-header-row">
+                        <div class="step-title-group">
+                            <span class="step-number">02</span>
+                            <h3 class="step-title">RuSTy Compilation</h3>
+                            <span class="step-tag">ST → LLVM IR</span>
+                        </div>
+                        <span class="step-status-badge {{ 'success' if result.steps.compile.success else 'failed' }}">
+                            {{ 'Success' if result.steps.compile.success else 'Failed' }}
+                        </span>
+                    </div>
+                    {% if result.steps.compile.output %}
+                    <div class="step-body">
+                        <div class="output-panel">
+                            <pre class="output-text">{{ result.steps.compile.output }}</pre>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Step 3: Translation -->
+            <div class="timeline-step {{ 'success' if result.steps.translate.success else 'failed' }} {{ 'expanded' if result.steps.translate.output }}" data-step="translate">
+                <div class="timeline-marker">
+                    <div class="marker-ring"></div>
+                    <div class="marker-icon">
+                        {% if result.steps.translate.success %}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        {% else %}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="timeline-content">
+                    <div class="step-header-row">
+                        <div class="step-title-group">
+                            <span class="step-number">03</span>
+                            <h3 class="step-title">SMV Translation</h3>
+                            <span class="step-tag">ST → SMV</span>
+                        </div>
+                        <span class="step-status-badge {{ 'success' if result.steps.translate.success else 'failed' }}">
+                            {{ 'Success' if result.steps.translate.success else 'Failed' }}
+                        </span>
+                    </div>
+                    {% if result.steps.translate.output %}
+                    <div class="step-body">
+                        <div class="output-panel">
+                            <pre class="output-text">{{ result.steps.translate.output }}</pre>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Step 4: nuXmv Verification -->
+            <div class="timeline-step {{ 'success' if result.steps.verify_nuxmv.success else 'failed' }} {{ 'expanded' if result.steps.verify_nuxmv.output }}" data-step="verify_nuxmv">
+                <div class="timeline-marker">
+                    <div class="marker-ring"></div>
+                    <div class="marker-icon">
+                        {% if result.steps.verify_nuxmv.success %}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        {% else %}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="timeline-content">
+                    <div class="step-header-row">
+                        <div class="step-title-group">
+                            <span class="step-number">04</span>
+                            <h3 class="step-title">nuXmv Verification</h3>
+                            <span class="step-tag">Model Checking</span>
+                        </div>
+                        <span class="step-status-badge {{ 'success' if result.steps.verify_nuxmv.success else 'failed' }}">
+                            {{ 'Success' if result.steps.verify_nuxmv.success else 'Failed' }}
+                        </span>
+                    </div>
+                    {% if result.steps.verify_nuxmv.output %}
+                    <div class="step-body">
+                        <div class="output-panel">
+                            <pre class="output-text">{{ result.steps.verify_nuxmv.output }}</pre>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Step 5: PLCverif -->
+            {% if result.steps.verify_plcverif.output %}
+            <div class="timeline-step {{ 'success' if result.steps.verify_plcverif.success else 'failed' }} expanded" data-step="verify_plcverif">
+                <div class="timeline-marker">
+                    <div class="marker-ring"></div>
+                    <div class="marker-icon">
+                        {% if result.steps.verify_plcverif.success %}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        {% else %}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="timeline-content">
+                    <div class="step-header-row">
+                        <div class="step-title-group">
+                            <span class="step-number">05</span>
+                            <h3 class="step-title">PLCverif Verification</h3>
+                            <span class="step-tag">Property Check</span>
+                        </div>
+                        <span class="step-status-badge {{ 'success' if result.steps.verify_plcverif.success else 'failed' }}">
+                            {{ 'Success' if result.steps.verify_plcverif.success else 'Failed' }}
+                        </span>
+                    </div>
+                    <div class="step-body">
+                        <div class="output-panel">
+                            <pre class="output-text">{{ result.steps.verify_plcverif.output }}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Original Input Card -->
+        <div class="input-review-card">
+            <div class="input-review-header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>Original Input</span>
+            </div>
+            <div class="input-review-body">
+                <div class="input-review-section">
+                    <label>Requirements</label>
+                    <pre>{{ result.original_requirements }}</pre>
+                </div>
+                {% if result.original_properties %}
+                <div class="input-review-section">
+                    <label>Properties</label>
+                    <pre>{{ result.original_properties }}</pre>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Action -->
+    <div class="fab-container">
+        <a href="{{ url_for('index') }}" class="fab-btn" title="New Request">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        </a>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

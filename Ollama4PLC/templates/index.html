@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama4PLC — AI PLC Code Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect x="2" y="2" width="28" height="28" rx="6" stroke="currentColor" stroke-width="2"/>
+                    <path d="M10 12h12M10 16h8M10 20h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <span class="brand-text">Ollama4PLC</span>
+            <span class="brand-badge">v2.0</span>
+        </div>
+        <div class="nav-links">
+            <a href="#pipeline" class="nav-link">Pipeline</a>
+            <a href="#tools" class="nav-link">Tools</a>
+            <a href="https://github.com/yourusername/ollama4plc" target="_blank" class="nav-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
+            </a>
+            <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+                <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-badge">
+            <span class="badge-dot"></span>
+            <span id="engineStatusText">{{ 'System Ready' if not status_warning else 'System Issue' }}</span>
+        </div>
+        <h1 class="hero-title">
+            <span class="gradient-text">AI-Powered</span> PLC<br>
+            Code Generation
+        </h1>
+        <p class="hero-subtitle">
+            Generate IEC 61131-3 Structured Text from natural language, 
+            compile with RuSTy, and verify with nuXmv — all locally.
+        </p>
+        <div class="hero-stats">
+            <div class="stat">
+                <span class="stat-value">5</span>
+                <span class="stat-label">Pipeline Steps</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat">
+                <span class="stat-value">100%</span>
+                <span class="stat-label">Local & Private</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat">
+                <span class="stat-value">IEC</span>
+                <span class="stat-label">61131-3 Standard</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Status Alert -->
+    {% if status_warning %}
+    <div class="alert alert-error animate-shake">
+        <div class="alert-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+        </div>
+        <div class="alert-content">
+            <strong>Engine Status Issue</strong>
+            <span>{{ status_warning }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Tool Status Panel -->
+    <section class="tools-panel" id="tools">
+        <div class="section-header">
+            <h2 class="section-title">Tool Status</h2>
+            <button class="btn-refresh" id="refreshTools" title="Refresh status">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </button>
+        </div>
+        <div class="tools-grid" id="toolsGrid">
+            <div class="tool-card" data-tool="ollama">
+                <div class="tool-icon-wrapper ollama">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <div class="tool-info">
+                    <span class="tool-name">Ollama</span>
+                    <span class="tool-desc">Local LLM Server</span>
+                </div>
+                <div class="tool-status" id="status-ollama">
+                    <span class="status-dot checking"></span>
+                    <span class="status-text">Checking...</span>
+                </div>
+            </div>
+            <div class="tool-card" data-tool="rusty">
+                <div class="tool-icon-wrapper rusty">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                </div>
+                <div class="tool-info">
+                    <span class="tool-name">RuSTy</span>
+                    <span class="tool-desc">ST Compiler</span>
+                </div>
+                <div class="tool-status" id="status-rusty">
+                    <span class="status-dot checking"></span>
+                    <span class="status-text">Checking...</span>
+                </div>
+            </div>
+            <div class="tool-card" data-tool="nuxmv">
+                <div class="tool-icon-wrapper nuxmv">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                </div>
+                <div class="tool-info">
+                    <span class="tool-name">nuXmv</span>
+                    <span class="tool-desc">Model Checker</span>
+                </div>
+                <div class="tool-status" id="status-nuxmv">
+                    <span class="status-dot checking"></span>
+                    <span class="status-text">Checking...</span>
+                </div>
+            </div>
+            <div class="tool-card" data-tool="plcverif">
+                <div class="tool-icon-wrapper plcverif">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                </div>
+                <div class="tool-info">
+                    <span class="tool-name">PLCverif</span>
+                    <span class="tool-desc">PLC Verification</span>
+                </div>
+                <div class="tool-status" id="status-plcverif">
+                    <span class="status-dot checking"></span>
+                    <span class="status-text">Checking...</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pipeline Visualization -->
+    <section class="pipeline-section" id="pipeline">
+        <h2 class="section-title">Pipeline</h2>
+        <div class="pipeline-flow">
+            <div class="pipeline-step" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <span class="step-name">Generate</span>
+                    <span class="step-detail">Ollama LLM</span>
+                </div>
+            </div>
+            <div class="pipeline-arrow">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="pipeline-step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <span class="step-name">Compile</span>
+                    <span class="step-detail">RuSTy → LLVM</span>
+                </div>
+            </div>
+            <div class="pipeline-arrow">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="pipeline-step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <span class="step-name">Translate</span>
+                    <span class="step-detail">ST → SMV</span>
+                </div>
+            </div>
+            <div class="pipeline-arrow">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+            <div class="pipeline-step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <span class="step-name">Verify</span>
+                    <span class="step-detail">nuXmv / PLCverif</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Form -->
+    <main class="main-form">
+        <form action="{{ url_for('process_pipeline') }}" method="POST" class="pipeline-form" id="pipelineForm">
+            <!-- Requirements Input -->
+            <div class="input-group">
+                <div class="input-header">
+                    <label for="requirements" class="input-label">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        PLC Requirements
+                    </label>
+                    <span class="input-badge">Required</span>
+                </div>
+                <div class="textarea-wrapper">
+                    <textarea 
+                        id="requirements" 
+                        name="requirements" 
+                        class="input-textarea"
+                        rows="10" 
+                        placeholder="Describe your PLC control logic in natural language...&#10;&#10;Example:&#10;Create a motor start/stop control with the following logic:&#10;- Inputs: Start_PB (BOOL), Stop_PB (BOOL), Emergency_Stop (BOOL)&#10;- Outputs: Motor_Run (BOOL), Status_Light (BOOL)&#10;- Pressing Start_PB starts the motor&#10;- Pressing Stop_PB or Emergency_Stop stops the motor&#10;- Status_Light indicates motor running state"
+                        required
+                    >{{ default_requirements }}</textarea>
+                    <div class="textarea-toolbar">
+                        <button type="button" class="toolbar-btn" id="clearRequirements" title="Clear">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                        </button>
+                        <button type="button" class="toolbar-btn" id="loadExample" title="Load example">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        </button>
+                        <span class="char-count" id="reqCharCount">0 chars</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Properties Input -->
+            <div class="input-group">
+                <div class="input-header">
+                    <label for="plcverif_properties" class="input-label">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                        LTL Properties <span class="label-hint">(Optional)</span>
+                    </label>
+                    <button type="button" class="btn-hint" id="togglePropertiesHint">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+                    </button>
+                </div>
+                <div class="textarea-wrapper">
+                    <textarea 
+                        id="plcverif_properties" 
+                        name="plcverif_properties" 
+                        class="input-textarea properties-textarea"
+                        rows="5"
+                        placeholder="(*! LTL G (Output -> F !Input) *)"
+                    >{{ default_properties }}</textarea>
+                </div>
+                <div class="properties-hint" id="propertiesHint">
+                    <div class="hint-box">
+                        <strong>Property Format:</strong>
+                        <code>(*! LTL G (Motor_Run -> F !Stop_PB) *)</code>
+                        <br><br>
+                        <strong>Common Patterns:</strong>
+                        <ul>
+                            <li><code>G (A -> F B)</code> — If A then eventually B</li>
+                            <li><code>G !(A & B)</code> — A and B never together</li>
+                            <li><code>G (A -> X B)</code> — A implies B next cycle</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-actions">
+                <button type="submit" class="btn-primary btn-large" id="submitBtn">
+                    <span class="btn-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    </span>
+                    <span class="btn-text">Generate & Verify</span>
+                    <span class="btn-shimmer"></span>
+                </button>
+                <button type="reset" class="btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    Reset
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <!-- Info Cards -->
+    <section class="info-section">
+        <div class="info-card">
+            <div class="info-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 12l9-9"/></svg>
+            </div>
+            <h3>Local Processing</h3>
+            <p>All code generation and verification runs on your machine. No data leaves your network.</p>
+        </div>
+        <div class="info-card">
+            <div class="info-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <h3>RuSTy Compiler</h3>
+            <p>Compiles generated ST code to LLVM IR with strict IEC 61131-3 syntax validation.</p>
+        </div>
+        <div class="info-card">
+            <div class="info-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            </div>
+            <h3>Formal Verification</h3>
+            <p>nuXmv model checker verifies safety and liveness properties automatically.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Ollama4PLC — Made for the industrial automation community</p>
+        <div class="footer-links">
+            <span>Powered by</span>
+            <span class="footer-tool">Ollama</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-tool">RuSTy</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-tool">nuXmv</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-tool">PLCverif</span>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
